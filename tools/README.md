@@ -3,6 +3,15 @@
 Small Node.js scripts to catch broken `.setting` files before you restart
 Resolve. No dependencies, run with `node` from the repo root.
 
+```
+  .setting  ──►  check_setting  ──►  check_refs  ──►  install in Resolve
+                brackets,           SourceOp and
+                parentheses,        UserControls
+                expressions         targets exist
+                     │                    │
+                     └──── both must pass before copying ────┘
+```
+
 ```bash
 node tools/check_setting.js v2/Edit/Effects/*.setting
 node tools/check_refs.js    v2/Edit/Effects/*.setting

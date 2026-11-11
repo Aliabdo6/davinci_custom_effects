@@ -13,6 +13,35 @@ Install a Fusion effect so it appears in DaVinci Resolve's **Edit** page and can
 Each folder has its own README. If you only want the new material, read
 [`v2/README.md`](v2/README.md) — it installs alongside the originals.
 
+## How an effect works
+
+Every effect here is a Fusion **macro** placed on an **Adjustment Clip**, not on
+the footage itself:
+
+```
+   V2   ┌────────────────────────────┐
+        │  Adjustment Clip           │   ← the effect lives here
+        │  + your macro on it        │
+        └────────────┬───────────────┘
+                     │  reaches down through the tracks
+                     ▼
+   V1   ┌────────────────────────────┐
+        │  your footage              │   ← this is what gets affected
+        └────────────────────────────┘
+```
+
+The clip above sends the picture below into the macro, the macro transforms it,
+and the result is what you see. That is why one adjustment clip can affect
+several clips at once, and why stacking effects means stacking tracks.
+
+Inside the macro, animation comes from expressions on the frame number — never
+from keyframes — so an effect plays as soon as you drop it. Every macro has a
+**Timeline Frame Rate** menu so seconds convert correctly.
+
+Node-level diagrams for each effect are in
+[`v2/Edit/Effects/README.md`](v2/Edit/Effects/README.md) and
+[`Edit/Effects/README.md`](Edit/Effects/README.md).
+
 ## Install the effect
 
 1. Press **`Win + R`** to open the Run dialog.

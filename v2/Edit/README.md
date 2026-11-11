@@ -3,6 +3,15 @@
 This folder mirrors the layout Resolve expects for **Edit page** templates.
 
 ```
+  this repo                              DaVinci Resolve
+  ─────────────────────────────────      ─────────────────────────────────────
+  v2/Edit/Effects/*.setting   ──────►    Templates/Edit/Effects/
+                                              │
+                                              ▼
+                                         Edit page → Effects panel
+```
+
+```
 Edit/
 └── Effects/        ← the effect files go here
 ```

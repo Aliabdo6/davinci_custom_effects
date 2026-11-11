@@ -31,6 +31,33 @@ More detail and troubleshooting: [../README.md](../README.md).
 | `VOX_ArchivalPush.setting` | **VOXArchivalPush** | The slow, deliberate push-in on a still. Constant speed by default. |
 | `VOX_Callout.setting` | **VOXCallout** | Animated circle/oval outline that pops on with a slight overshoot. |
 | `VOX_StatCard.setting` | **VOXStatCard** | Big number + label + accent bar, built in sequence. |
+| `VOX_MapFocus.setting` | **VOXMapFocus** | Dims the frame, keeps one region at full brightness, adds a pulsing marker dot. |
+| `VOX_HighlightBar.setting` | **VOXHighlightBar** | Accent bar that wipes on behind a word, a row, or a number. |
+| `VOX_PhotoCard.setting` | **VOXPhotoCard** | Archival still as a tilted paper card with a soft shadow, sliding in. |
+
+## How every effect works
+
+```
+  EDIT PAGE                                   FUSION (inside the .setting)
+
+  ┌──────────────────────────┐
+  │ V2  Adjustment Clip      │
+  │     effect: <macro>      │          ┌───────┐    ┌───────────┐    ┌────────┐
+  └──────────────────────────┘          │ Input │───►│ Transform │───►│ Output │
+               │                        └───────┘    └───────────┘    └────────┘
+               │ affects                       ▲            ▲
+               ▼                               │            │
+  ┌──────────────────────────┐            footage      expression on
+  │ V1  your footage         │            below        `time` = animation
+  └──────────────────────────┘
+```
+
+The adjustment clip passes the picture underneath into the macro. The macro
+transforms it and hands it back. All animation is computed from the clip's
+`time` — nothing is keyframed, so an effect works the moment you drop it.
+
+Per-effect node graphs (and the exact timing curve of each) are in
+[`Edit/Effects/README.md`](Edit/Effects/README.md).
 
 ---
 
@@ -114,6 +141,44 @@ The build order is bar → number → label, spaced by **Stagger**. Text sizes a
 on the first page; accent colour is on `Color`. Text colour is white and light
 grey — to change it, expand the macro and set the colour on the two Text+ nodes.
 
+### VOXMapFocus
+
+Put a map (or any still) underneath, tick **Step 1** and drag the region box
+over the area you want to point at. Untick it.
+
+- **Dim Everything Else** is how much the rest of the frame is knocked back.
+  `0.55` is a clear focus, `0.75` is close to a spotlight.
+- **Marker Dot Size** draws a pulsing dot at the centre of the region — set it
+  to `0` for a clean dim with no marker.
+- **Pulse** and **Pulse Period** control the breathing. `1` and `1.2 s` is a
+  calm heartbeat.
+
+The region is a hard-edged rectangle. For an oval emphasis, put `VOXCallout` on
+top of this effect on the next track up.
+
+### VOXHighlightBar
+
+Tick **Step 1**, drag the bar onto the word or row, untick it. **Bar Width** and
+**Bar Height** are sliders; position is the drag.
+
+- **Wipe Direction** chooses left→right or right→left.
+- **Opacity** at `1` is a solid bar. Drop it to `0.35–0.45` to lay it over text
+  like a marker pen.
+- The bar appears once and stays. Trim the adjustment clip to control when it
+  disappears.
+
+### VOXPhotoCard
+
+Tick **Step 1**, drag the yellow box to where the card should land, untick it.
+The photo underneath becomes the card's picture.
+
+- **Card Width / Height** and **Paper Border** set the frame and the white
+  inset. The photo is scaled to cover the inner area and cropped by the border.
+- **Rotation** is the tilt. `-2°` reads as "placed by hand"; `0` looks digital.
+- **Entrance From** + **Entrance Distance** + **Overshoot** give the slide and
+  the little snap at the end. Set distance to `0` for a card that just appears.
+- Shadow shape lives on the `Shadow` page: offset, darkness, softness.
+
 ---
 
 ## Fixes and changes vs `CineFocus_SmoothZoom`
@@ -136,6 +201,36 @@ grey — to change it, expand the macro and set the colour on the two Text+ node
   CineFocusMulti is auto-only by design.
 - **Removed the redundant blue "result" rectangle.** It duplicated the guide
   box, so it was dropped to save nodes.
+
+## Templates and presets
+
+Yes — and these files already are templates. Resolve uses the **folder name** to
+decide where a template appears:
+
+| Folder | Appears as | Notes |
+|---|---|---|
+| `Templates\Edit\Effects` | Effects panel | what everything in this folder uses |
+| `Templates\Edit\Titles` | Titles panel | same `.setting` format |
+| `Templates\Edit\Transitions` | Transitions panel | needs **two** image inputs |
+| `Templates\Edit\Generators` | Generators panel | one input, or none |
+
+So a "VOX lower third" could be dropped in as a Title instead of an Effect by
+copying the file to the `Titles` folder — the graph is identical.
+
+**Presets** (same effect, different starting values) are a separate matter.
+Resolve's Edit page has no preset browser for effects, so there are two routes:
+
+1. **One file per preset** — simplest. Copy the effect, rename both the
+   `MacroOperator` key and `ActiveTool` to match the new filename, and change
+   the default `Value` fields. It shows up as its own entry, e.g.
+   `VOXArchivalPush_Slow`, `VOXArchivalPush_Drift`.
+2. **A preset dropdown inside the macro** — add a `Preset` combo whose
+   expression drives the other parameters. Tidier palette, but the individual
+   sliders become read-only while a preset is selected.
+
+**Transitions cannot be built from this pattern.** An adjustment clip supplies
+one image, and a transition needs the outgoing and incoming clips at once. Those
+have to be Transition templates with two inputs, or done as two stacked clips.
 
 ## Limitations
 
