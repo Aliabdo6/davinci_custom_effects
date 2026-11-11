@@ -2,6 +2,17 @@
 
 Install a Fusion effect so it appears in DaVinci Resolve's **Edit** page and can be used on an **Adjustment Clip**.
 
+## What is in this repo
+
+| Folder | Contents |
+|---|---|
+| [`Edit`](Edit) | The original effects: `ZoomCrop`, `ZoomCropPro`, `CineFocus`. Unchanged. |
+| [`v2`](v2) | Rewritten multi-target move (`CineFocusMulti`) plus VOX-style effects (`VOXArchivalPush`, `VOXCallout`, `VOXStatCard`). |
+| [`tools`](tools) | Node scripts that sanity-check a `.setting` file before you install it. |
+
+Each folder has its own README. If you only want the new material, read
+[`v2/README.md`](v2/README.md) — it installs alongside the originals.
+
 ## Install the effect
 
 1. Press **`Win + R`** to open the Run dialog.
