@@ -1,0 +1,229 @@
+{
+	Tools = ordered() {
+		ZoomCropPro = MacroOperator {
+			CtrlWZoom = false,
+			Inputs = ordered() {
+				Input = InstanceInput {
+					SourceOp = "ZoomXf",
+					Source = "Input",
+				},
+				Amount = Input { Value = 1, },
+				EditMode = Input { Value = 0, },
+				FrameCenter = InstanceInput {
+					SourceOp = "GuideRect",
+					Source = "Center",
+					Name = "Frame Center (drag to move)",
+				},
+				FrameWidth = InstanceInput {
+					SourceOp = "GuideRect",
+					Source = "Width",
+					Name = "Frame Width",
+				},
+				FrameHeight = InstanceInput {
+					SourceOp = "GuideRect",
+					Source = "Height",
+					Name = "Frame Height",
+				},
+				FitMode = Input { Value = 0, },
+				KeepInside = Input { Value = 0, },
+				MaxZoom = Input { Value = 8, },
+				ZoomCalc = Input {
+					Value = 2,
+					Expression = "min(ZoomCropPro.MaxZoom, max(1, 1 / (max(max(0.01, abs(ZoomCropPro.FrameWidth)), max(0.01, abs(ZoomCropPro.FrameHeight))) * (1 - ZoomCropPro.FitMode) + min(max(0.01, abs(ZoomCropPro.FrameWidth)), max(0.01, abs(ZoomCropPro.FrameHeight))) * ZoomCropPro.FitMode)))",
+				},
+				ViewCenter = Input {
+					Value = { 0.5, 0.5 },
+					Expression = "Point(ZoomCropPro.FrameCenter.X + ZoomCropPro.KeepInside * (min(max(ZoomCropPro.FrameCenter.X, 0.5 / ZoomCropPro.ZoomCalc), 1 - 0.5 / ZoomCropPro.ZoomCalc) - ZoomCropPro.FrameCenter.X), ZoomCropPro.FrameCenter.Y + ZoomCropPro.KeepInside * (min(max(ZoomCropPro.FrameCenter.Y, 0.5 / ZoomCropPro.ZoomCalc), 1 - 0.5 / ZoomCropPro.ZoomCalc) - ZoomCropPro.FrameCenter.Y))",
+				},
+			},
+			Outputs = {
+				MainOutput1 = InstanceOutput {
+					SourceOp = "ResultMerge",
+					Source = "Output",
+				},
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				ZoomXf = Transform {
+					Inputs = {
+						Center = Input { Value = { 0.5, 0.5 }, },
+						Pivot = Input {
+							Value = { 0.5, 0.5 },
+						Expression = "Point(0.5 + (ZoomCropPro.ViewCenter.X - 0.5) * (ZoomCropPro.Amount * (1 - ZoomCropPro.EditMode)), 0.5 + (ZoomCropPro.ViewCenter.Y - 0.5) * (ZoomCropPro.Amount * (1 - ZoomCropPro.EditMode)))",
+						},
+						Size = Input {
+							Value = 1,
+						Expression = "pow(ZoomCropPro.ZoomCalc, ZoomCropPro.Amount * (1 - ZoomCropPro.EditMode))",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 110, 0 } },
+				},
+				GuideColor = Background {
+					Inputs = {
+						UseFrameFormatSettings = Input { Value = 1, },
+						TopLeftRed = Input { Value = 1, },
+						TopLeftGreen = Input { Value = 0.85, },
+						TopLeftBlue = Input { Value = 0, },
+						TopLeftAlpha = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 110, 60 } },
+				},
+				GuideRect = RectangleMask {
+					Inputs = {
+						Solid = Input { Value = 0, },
+						BorderWidth = Input { Value = 0.004, },
+						MaskWidth = Input { Value = 1920, },
+						MaskHeight = Input { Value = 1080, },
+						PixelAspect = Input { Value = { 1, 1 }, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						Center = Input {
+							Value = { 0.5, 0.5 },
+						},
+						Width = Input {
+							Value = 0.5,
+						},
+						Height = Input {
+							Value = 0.5,
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 220, 60 } },
+				},
+				GuideMerge = Merge {
+					Inputs = {
+						Background = Input {
+							SourceOp = "ZoomXf",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "GuideColor",
+							Source = "Output",
+						},
+						EffectMask = Input {
+							SourceOp = "GuideRect",
+							Source = "Mask",
+						},
+						Blend = Input {
+							Value = 0,
+							Expression = "ZoomCropPro.EditMode",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 220, 0 } },
+				},
+				ResultColor = Background {
+					Inputs = {
+						UseFrameFormatSettings = Input { Value = 1, },
+						TopLeftRed = Input { Value = 0, },
+						TopLeftGreen = Input { Value = 0.9, },
+						TopLeftBlue = Input { Value = 1, },
+						TopLeftAlpha = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 330, 60 } },
+				},
+				ResultRect = RectangleMask {
+					Inputs = {
+						Solid = Input { Value = 0, },
+						BorderWidth = Input { Value = 0.003, },
+						MaskWidth = Input { Value = 1920, },
+						MaskHeight = Input { Value = 1080, },
+						PixelAspect = Input { Value = { 1, 1 }, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						Center = Input {
+							Value = { 0.5, 0.5 },
+							Expression = "Point(ZoomCropPro.ViewCenter.X, ZoomCropPro.ViewCenter.Y)",
+						},
+						Width = Input {
+							Value = 0.5,
+							Expression = "1 / ZoomCropPro.ZoomCalc",
+						},
+						Height = Input {
+							Value = 0.5,
+							Expression = "1 / ZoomCropPro.ZoomCalc",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 440, 60 } },
+				},
+				ResultMerge = Merge {
+					Inputs = {
+						Background = Input {
+							SourceOp = "GuideMerge",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "ResultColor",
+							Source = "Output",
+						},
+						EffectMask = Input {
+							SourceOp = "ResultRect",
+							Source = "Mask",
+						},
+						Blend = Input {
+							Value = 0,
+							Expression = "ZoomCropPro.EditMode",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 440, 0 } },
+				},
+			},
+			UserControls = ordered() {
+				Amount = {
+					LINKS_Name = "Zoom Amount",
+					LINKID_DataType = "Number",
+					INPID_InputControl = "SliderControl",
+					INP_Default = 1,
+					INP_MinScale = 0,
+					INP_MaxScale = 1,
+					INP_MinAllowed = 0,
+					INP_MaxAllowed = 1,
+				},
+				EditMode = {
+					LINKS_Name = "Select Area (show full frame + guide)",
+					LINKID_DataType = "Number",
+					INPID_InputControl = "CheckboxControl",
+					INP_Integer = true,
+					INP_Default = 0,
+				},
+				FitMode = {
+					LINKS_Name = "Fit Mode",
+					LINKID_DataType = "Number",
+					INPID_InputControl = "ComboControl",
+					INP_Integer = true,
+					INP_Default = 0,
+					{ CCS_AddString = "Fit - whole selection visible, centered", },
+					{ CCS_AddString = "Fill - selection fills the frame, centered", },
+				},
+				KeepInside = {
+					LINKS_Name = "Keep View Inside Image (no black edges)",
+					LINKID_DataType = "Number",
+					INPID_InputControl = "CheckboxControl",
+					INP_Integer = true,
+					INP_Default = 0,
+				},
+				MaxZoom = {
+					LINKS_Name = "Max Zoom",
+					LINKID_DataType = "Number",
+					INPID_InputControl = "SliderControl",
+					INP_Default = 8,
+					INP_MinScale = 1,
+					INP_MaxScale = 30,
+					INP_MinAllowed = 1,
+				},
+				ZoomCalc = {
+					LINKS_Name = "Calculated Zoom (read only)",
+					LINKID_DataType = "Number",
+					INPID_InputControl = "SliderControl",
+					INP_Default = 1,
+					INP_MinScale = 1,
+					INP_MaxScale = 30,
+				},
+				ViewCenter = {
+					LINKS_Name = "Calculated View Center (read only)",
+					LINKID_DataType = "Point",
+					INPID_InputControl = "OffsetControl",
+					INP_DefaultX = 0.5,
+					INP_DefaultY = 0.5,
+				},
+			},
+		},
+	},
+	ActiveTool = "ZoomCropPro"
+}

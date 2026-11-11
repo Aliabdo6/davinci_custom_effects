@@ -1,0 +1,130 @@
+{
+	Tools = ordered() {
+		ZoomCrop = MacroOperator {
+			CtrlWZoom = false,
+			Inputs = ordered() {
+				Input = InstanceInput {
+					SourceOp = "ZoomXf",
+					Source = "Input",
+				},
+				Amount = Input { Value = 1, },
+				EditMode = Input { Value = 0, },
+				TopLeft = Input { Value = { 0.25, 0.75 }, },
+				BottomRight = Input { Value = { 0.75, 0.25 }, },
+			},
+			Outputs = {
+				MainOutput1 = InstanceOutput {
+					SourceOp = "GuideMerge",
+					Source = "Output",
+				},
+			},
+			ViewInfo = GroupInfo { Pos = { 0, 0 } },
+			Tools = ordered() {
+				ZoomXf = Transform {
+					Inputs = {
+						Center = Input { Value = { 0.5, 0.5 }, },
+						Pivot = Input {
+							Value = { 0.5, 0.5 },
+							Expression = "Point(0.5 + ((ZoomCrop.TopLeft.X + ZoomCrop.BottomRight.X) / 2 - 0.5) * (ZoomCrop.Amount * (1 - ZoomCrop.EditMode)), 0.5 + ((ZoomCrop.TopLeft.Y + ZoomCrop.BottomRight.Y) / 2 - 0.5) * (ZoomCrop.Amount * (1 - ZoomCrop.EditMode)))",
+						},
+						Size = Input {
+							Value = 1,
+							Expression = "pow(min(8, max(1, 1 / max(0.01, abs(ZoomCrop.BottomRight.X - ZoomCrop.TopLeft.X), abs(ZoomCrop.BottomRight.Y - ZoomCrop.TopLeft.Y)))), ZoomCrop.Amount * (1 - ZoomCrop.EditMode))",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 110, 0 } },
+				},
+				GuideColor = Background {
+					Inputs = {
+						UseFrameFormatSettings = Input { Value = 1, },
+						TopLeftRed = Input { Value = 1, },
+						TopLeftGreen = Input { Value = 0.85, },
+						TopLeftBlue = Input { Value = 0, },
+						TopLeftAlpha = Input { Value = 1, },
+					},
+					ViewInfo = OperatorInfo { Pos = { 110, 60 } },
+				},
+				GuideRect = RectangleMask {
+					Inputs = {
+						Solid = Input { Value = 0, },
+						BorderWidth = Input { Value = 0.004, },
+						MaskWidth = Input { Value = 1920, },
+						MaskHeight = Input { Value = 1080, },
+						PixelAspect = Input { Value = { 1, 1 }, },
+						UseFrameFormatSettings = Input { Value = 1, },
+						Center = Input {
+							Value = { 0.5, 0.5 },
+							Expression = "Point((ZoomCrop.TopLeft.X + ZoomCrop.BottomRight.X) / 2, (ZoomCrop.TopLeft.Y + ZoomCrop.BottomRight.Y) / 2)",
+						},
+						Width = Input {
+							Value = 0.5,
+							Expression = "abs(ZoomCrop.BottomRight.X - ZoomCrop.TopLeft.X)",
+						},
+						Height = Input {
+							Value = 0.5,
+							Expression = "abs(ZoomCrop.BottomRight.Y - ZoomCrop.TopLeft.Y)",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 220, 60 } },
+				},
+				GuideMerge = Merge {
+					Inputs = {
+						Background = Input {
+							SourceOp = "ZoomXf",
+							Source = "Output",
+						},
+						Foreground = Input {
+							SourceOp = "GuideColor",
+							Source = "Output",
+						},
+						EffectMask = Input {
+							SourceOp = "GuideRect",
+							Source = "Mask",
+						},
+						Blend = Input {
+							Value = 0,
+							Expression = "ZoomCrop.EditMode",
+						},
+					},
+					ViewInfo = OperatorInfo { Pos = { 220, 0 } },
+				},
+			},
+			UserControls = ordered() {
+				Amount = {
+					LINKS_Name = "Zoom Amount",
+					LINKID_DataType = "Number",
+					INPID_InputControl = "SliderControl",
+					INP_Default = 1,
+					INP_MinScale = 0,
+					INP_MaxScale = 1,
+					INP_MinAllowed = 0,
+					INP_MaxAllowed = 1,
+				},
+				EditMode = {
+					LINKS_Name = "Select Area (show full frame + guide)",
+					LINKID_DataType = "Number",
+					INPID_InputControl = "CheckboxControl",
+					INP_Integer = true,
+					INP_Default = 0,
+				},
+				TopLeft = {
+					LINKS_Name = "Top Left",
+					LINKID_DataType = "Point",
+					INPID_InputControl = "OffsetControl",
+					INPID_PreviewControl = "CrosshairControl",
+					INP_DefaultX = 0.25,
+					INP_DefaultY = 0.75,
+				},
+				BottomRight = {
+					LINKS_Name = "Bottom Right",
+					LINKID_DataType = "Point",
+					INPID_InputControl = "OffsetControl",
+					INPID_PreviewControl = "CrosshairControl",
+					INP_DefaultX = 0.75,
+					INP_DefaultY = 0.25,
+				},
+			},
+		},
+	},
+	ActiveTool = "ZoomCrop"
+}
